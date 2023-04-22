@@ -75,7 +75,6 @@ private:
 
   void grow(int new_capacity)
   {
-    std::cout << "grow to " << new_capacity << std::endl;
     DirectoryNode **new_table = new DirectoryNode *[new_capacity];
 
     for (int i = 0; i < capacity; i++)
