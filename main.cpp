@@ -80,9 +80,13 @@ private:
     for (int i = 0; i < capacity; i++)
     {
       DirectoryNode *node = table[i];
+
       while (node != nullptr)
       {
+        table[i] = node->next;
+
         int new_index = node->hash % new_capacity;
+        // if node is no empty
         if (new_table[new_index])
         {
           node->next = new_table[new_index];
@@ -90,9 +94,10 @@ private:
         }
         else
         {
+          node->next = nullptr;
           new_table[new_index] = node;
         }
-        node = node->next;
+        node = table[i];
       }
     }
 
@@ -105,13 +110,18 @@ private:
 
 public:
   Directory(
-      int capacity,
-      float loadFactor = 0.75)
+      int unsigned capacity = 4,
+      float loadFactor = 1)
       : capacity(capacity),
         size(0),
         loadFactor(loadFactor)
   {
     threshold = calculate_threshold();
+
+    if (capacity == 0)
+    {
+      throw std::invalid_argument("Capacity can't be zero");
+    }
     table = new DirectoryNode *[capacity];
     memset(table, 0, capacity * sizeof(DirectoryNode *));
   }
@@ -145,8 +155,10 @@ public:
     std::size_t hash = hasher(value.get_name());
     int index = hash % capacity;
     DirectoryNode *node = table[index];
+
     while (node != nullptr)
     {
+      // if record with this key already exists
       if (node->key == value.get_name())
       {
         node->value = value;
@@ -154,7 +166,12 @@ public:
       }
       node = node->next;
     }
-    DirectoryNode *newNode = new DirectoryNode(value.get_name(), value, hash);
+
+    DirectoryNode *newNode = new DirectoryNode(value.get_name(),
+                                               value,
+                                               hash);
+
+    // insert newNode at the beginning of the linked list
     newNode->next = table[index];
     table[index] = newNode;
     ++size;
@@ -243,20 +260,42 @@ public:
   {
     return size;
   }
+
+  unsigned int get_capacity()
+  {
+    return capacity;
+  }
 };
 
 int main()
 {
-  Directory dictionary(8);
+  // Create a new directory
+  Directory dir;
 
-  dictionary.insert({"John Snow", "+485327095"});
-  dictionary.insert({"Mike Tayson", "+235236231"});
-  dictionary.insert({"gsdgsdgsd", "+235236231"});
-  dictionary.insert({"532fwef32fe", "+235236231"});
-  dictionary.insert({"f23fs23fsefs", "+235236231"});
+  // Create some entries to insert
+  Entry entry1("Alice", "123-456-7890");
+  Entry entry2("Bob", "456-789-0123");
+  Entry entry3("Charlie", "789-012-3456");
 
-  dictionary.remove("532fwef32fe");
-  dictionary.lookup("532fwef32fe");
+  // Insert the entries into the directory
+  dir.insert(entry1);
+  dir.insert(entry2);
+  dir.insert(entry3);
 
-  dictionary.display();
+  // Get an entry by its key and print its details
+  std::optional<Entry> retrieved_entry = dir.get("Alice");
+  if (retrieved_entry.has_value())
+  {
+    retrieved_entry.value().print();
+  }
+  else
+  {
+    std::cout << "No entry found for Alice" << std::endl;
+  }
+
+  // Remove an entry from the directory
+  dir.remove("Bob");
+
+  // Look up an entry by its key and print its details (using the lookup function)
+  dir.lookup("Charlie");
 }

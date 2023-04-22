@@ -6,3 +6,6 @@ build_dir:
 
 run: main.cpp build_dir
 	$(CC) --std=c++17 -o ./$(BUILD_DIR)/target ./main.cpp && ./$(BUILD_DIR)/target
+
+build-dev: main.cpp build_dir
+	$(CC) --std=c++17 -g -Wall -Werror -o ./$(BUILD_DIR)/target ./main.cpp
